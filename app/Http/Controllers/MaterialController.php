@@ -4,30 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Material;
-use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MaterialController extends Controller
 {
+    /**
+     * Show the form for scanning materials.
+     */
     public function scan()
     {
         return view('materials.scan');
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -37,6 +24,10 @@ class MaterialController extends Controller
     {
         $validated = $request->validate([
             'scanInput' => 'required|string|max:20',
+        ], [
+            'scanInput.required' => 'El campo de escaneo es obligatorio.',
+            'scanInput.string'   => 'El campo de escaneo debe ser una cadena.',
+            'scanInput.max'      => 'El campo de escaneo no puede tener más de 20 caracteres.',
         ]);
 
         $barcode        = $validated['scanInput'];
@@ -53,15 +44,14 @@ class MaterialController extends Controller
                 'order_number'  => $orderNumber,
                 'sequence'      => $sequence,
                 'standard_pack' => $standardPack,
-                'status'        => '
-                ',
+                'status'        => 'pending',
             ]);
 
             // Registrar entrada
             $material->materialMovements()->create([
                 'area_id' => Auth::user()->area_id ?? null,
                 'user_id' => Auth::id(),
-                'type'    => 'entry',
+                'type'    => 'inspection',
             ]);
 
             return back()->with('success', "Material registrado: {$barcode}");
@@ -72,23 +62,32 @@ class MaterialController extends Controller
             return redirect()->route('materials.inspect', $material->id);
         }
 
-        return back()->with('success', "Este material ya fue procesado con estado: {$material->status}");
+        return back()->with('error', "Este material ya fue procesado con estado: " .
+            ($material->status == 'approved' ? 'Aprobado' : 'Rechazado'));
     }
 
+    /**
+     * Show the form for inspecting materials.
+     */
     public function inspect(Material $material)
     {
         if ($material->status !== 'pending') {
-            return redirect()->route('label-scan')->withErrors(['Este material ya fue procesado.']);
+            return redirect()->route('materials.scan')->withErrors(['Este material ya fue procesado.']);
         }
 
-        return view('materials.inspection', compact('material'));
+        return view('materials.inspect', compact('material'));
     }
 
     public function storeInspection(Request $request, Material $material)
     {
         $validated = $request->validate([
-            'status'   => 'required|in:good,bad',
+            'status'   => 'required|in:approved,rejected',
             'comment'  => 'nullable|string|max:255',
+        ], [
+            'status.required' => 'El campo de estado es obligatorio.',
+            'status.in'       => 'El estado debe ser "Aprobado" o "Rechazado".',
+            'comment.string'  => 'El comentario debe ser una cadena.',
+            'comment.max'     => 'El comentario no puede tener más de 255 caracteres.',
         ]);
 
         $material->update([
@@ -96,46 +95,43 @@ class MaterialController extends Controller
         ]);
 
         $material->materialMovements()->create([
-            'user_id'  => auth()->id(),
-            'area_id'  => auth()->user()->area_id,
-            'type'     => $validated['status'] === 'good' ? 'exit' : 'rejection',
-            'comment'  => $validated['comment'],
+            'area_id'   => Auth::user()->area_id ?? null,
+            'user_id'   => Auth::id(),
+            'type'      => $validated['status'] === 'approved' ? 'validated' : 'rejection',
+            'comment'   => $validated['comment'],
         ]);
 
-        return redirect()->route('label-scan')->with('success', 'Resultado de inspección guardado correctamente.');
+        return redirect()->route('materials.scan')->with('success', 'Resultado de inspección guardado correctamente.');
     }
 
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function validate(Request $request)
     {
-        //
-    }
+        if ($request->isMethod('post')) {
+            $request->validate([
+                'scanInput' => 'required|string|max:20'
+            ], [
+                'scanInput.required' => 'El campo de entrada de escaneo es obligatorio.',
+                'scanInput.string'   => 'El campo de entrada de escaneo debe ser una cadena.',
+                'scanInput.max'      => 'El campo de entrada de escaneo no puede tener más de 20 caracteres.',
+            ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+            $material = Material::with(['materialMovements' => function ($query) {
+                $query->latest()->with(['user', 'area.department']);
+            }])->where('barcode', $request->scanInput)->first();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+            if (!$material) {
+                return back()->with('error', 'Etiqueta no encontrada');
+            }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            $lastMovement = $material->materialMovements->first();
+
+            return back()->with([
+                'material' => $material,
+                'lastMovement' => $lastMovement,
+                'success' => 'Material encontrado'
+            ]);
+        }
+
+        return view('materials.validate');
     }
 }

@@ -20,5 +20,7 @@ Route::middleware([
     Route::get('materials/{material}/inspection', [App\Http\Controllers\MaterialController::class, 'inspect'])->name('materials.inspect');
     Route::post('materials/{material}/inspection', [App\Http\Controllers\MaterialController::class, 'storeInspection'])->name('materials.storeInspection');
     Route::match(['get', 'post'], 'materials/validate', [App\Http\Controllers\MaterialController::class, 'validate'])->name('materials.validate');
-    Route::resource('materials', App\Http\Controllers\MaterialController::class);
+
+    Route::get('materials', [App\Http\Controllers\MaterialController::class, 'index'])->name('materials.index');
+    Route::get('materials/{id}/movements', [App\Http\Controllers\MaterialController::class, 'movements'])->name('materials.movements');
 });

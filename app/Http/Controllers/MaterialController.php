@@ -4,11 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Material;
+use App\Models\MaterialMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MaterialController extends Controller
 {
+    public function index(Request $request)
+    {
+        $search = $request->get('search');
+
+        $materials = Material::when($search, function ($query, $search) {
+            return $query->where('barcode', 'like', "%{$search}%")
+                ->orWhere('order_number', 'like', "%{$search}%")
+                ->orWhere('part_number', 'like', "%{$search}%");
+        })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('materials.index', compact('materials', 'search'));
+    }
+
+    public function movements($id, Request $request)
+    {
+        $material = Material::findOrFail($id);
+        $search = $request->get('search');
+
+        $movements = MaterialMovement::with(['user', 'area'])
+            ->where('material_id', $id)
+            ->when($search, function ($query, $search) {
+                return $query->whereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })
+                    ->orWhere('type', 'like', "%{$search}%")
+                    ->orWhere('comment', 'like', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('materials.movements', compact('material', 'movements', 'search'));
+    }
+
     /**
      * Show the form for scanning materials.
      */

@@ -29,12 +29,11 @@
                     </form>
 
                     @if (session('success') && session('material'))
-                        <div class="p-6 mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">
-                                Información del material</h3>
+                                Información del Material</h3>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-
                                 <div class="p-3 rounded-md">
                                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Número de
                                         orden</p>
@@ -43,7 +42,8 @@
                                 </div>
 
                                 <div class="p-3 rounded-md">
-                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Secuencia</p>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Secuencia
+                                    </p>
                                     <p class="text-base font-semibold text-gray-800 mt-1">
                                         <span
                                             class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm font-medium">
@@ -58,7 +58,8 @@
                                 </div>
 
                                 <div class="p-3 rounded-md">
-                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</p>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad
+                                    </p>
                                     <p class="text-base font-semibold text-gray-800 mt-1">
                                         {{ (int) session('material')->standard_pack }}
                                     </p>
@@ -66,18 +67,17 @@
                             </div>
 
                             @if (session('lastMovement'))
-                                <div class="mt-8 pt-6 border-t border-gray-200">
+                                <div class="mt-6 pt-6 border-t border-gray-200">
                                     <h4 class="text-md font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">
-                                        Último movimiento</h4>
-
+                                        Último Movimiento
+                                    </h4>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div class="p-3 rounded-md">
-                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Área
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Área
                                             </p>
                                             <p class="text-base font-semibold text-gray-800 mt-1">
                                                 {{ session('lastMovement')->area->name ?? 'Sin Área' }}
-                                                {{-- <span
-                                                    class="block text-xs text-gray-500">{{ session('lastMovement')->area->department->name ?? 'Sin Departamento' }}</span> --}}
                                             </p>
                                         </div>
 
@@ -89,7 +89,8 @@
                                         </div>
 
                                         <div class="p-3 rounded-md">
-                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tipo
                                             </p>
                                             <p class="text-base font-semibold text-gray-800 mt-1">
                                                 @php
@@ -120,10 +121,12 @@
                                         </div>
 
                                         <div class="p-3 rounded-md">
-                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Fecha
                                             </p>
                                             <p class="text-base font-semibold text-gray-800 mt-1">
-                                                {{ session('lastMovement')->created_at->format('d/m/Y H:i:s') }}</p>
+                                                {{ session('lastMovement')->created_at->format('d/m/Y H:i:s') }}
+                                            </p>
                                         </div>
 
                                         @if (session('lastMovement')->comment)
@@ -141,7 +144,7 @@
                     @endif
 
                     @if (session('success'))
-                        <div class="p-4 mt-6 text-green-700 bg-green-100 border border-green-400 rounded-lg">
+                        <div class="p-4 text-green-700 bg-green-100 border border-green-400 rounded-lg">
                             <div class="flex items-center justify-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -154,7 +157,7 @@
                     @endif
 
                     @if (session('error'))
-                        <div class="p-4 mt-6 text-red-700 bg-red-100 border border-red-400 rounded-lg">
+                        <div class="p-4 text-red-700 bg-red-100 border border-red-400 rounded-lg">
                             <div class="flex items-center justify-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">

@@ -11,9 +11,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\MaterialController::class, 'statistics'])->name('dashboard');
 
     Route::get('materials/scan', [App\Http\Controllers\MaterialController::class, 'scan'])->name('materials.scan');
     Route::post('materials', [App\Http\Controllers\MaterialController::class, 'store'])->name('materials.store');

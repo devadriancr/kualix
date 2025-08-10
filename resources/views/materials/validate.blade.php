@@ -1,7 +1,7 @@
 <x-app-layout>
-    <div class="flex items-center justify-center min-h-screen py-12">
-        <div class="w-full max-w-2xl">
-            <div class="overflow-hidden bg-white shadow-xl sm:rounded-lg">
+    <div class="py-12">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <div class="overflow-hidden bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg">
                 <div class="p-8">
                     <form method="POST" action="{{ route('materials.validate') }}" id="scanForm">
                         @csrf
@@ -29,19 +29,19 @@
                     </form>
 
                     @if (session('success') && session('material'))
-                        <div class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 mt-2 bg-white rounded-lg shadow-sm border border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">
                                 Información del Material</h3>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                <div class="p-3 rounded-md">
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="rounded-md">
                                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Número de
                                         orden</p>
                                     <p class="text-base font-semibold text-gray-800 mt-1">
                                         {{ session('material')->order_number }}</p>
                                 </div>
 
-                                <div class="p-3 rounded-md">
+                                <div class="rounded-md">
                                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Secuencia
                                     </p>
                                     <p class="text-base font-semibold text-gray-800 mt-1">
@@ -57,7 +57,7 @@
                                     </p>
                                 </div>
 
-                                <div class="p-3 rounded-md">
+                                <div class="rounded-md">
                                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad
                                     </p>
                                     <p class="text-base font-semibold text-gray-800 mt-1">
@@ -71,8 +71,8 @@
                                     <h4 class="text-md font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">
                                         Último Movimiento
                                     </h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="p-3 rounded-md">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="rounded-md">
                                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Área
                                             </p>
@@ -81,14 +81,14 @@
                                             </p>
                                         </div>
 
-                                        <div class="p-3 rounded-md">
+                                        <div class="rounded-md">
                                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Usuario</p>
                                             <p class="text-base font-semibold text-gray-800 mt-1">
                                                 {{ session('lastMovement')->user->name ?? 'N/A' }}</p>
                                         </div>
 
-                                        <div class="p-3 rounded-md">
+                                        <div class="rounded-md">
                                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Tipo
                                             </p>
@@ -120,7 +120,7 @@
                                             </p>
                                         </div>
 
-                                        <div class="p-3 rounded-md">
+                                        <div class="rounded-md">
                                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Fecha
                                             </p>
@@ -130,7 +130,7 @@
                                         </div>
 
                                         @if (session('lastMovement')->comment)
-                                            <div class="md:col-span-2 p-3 rounded-md">
+                                            <div class="md:col-span-2 rounded-md">
                                                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     Comentario</p>
                                                 <p class="text-base font-semibold text-gray-800 mt-1">
@@ -140,19 +140,6 @@
                                     </div>
                                 </div>
                             @endif
-                        </div>
-                    @endif
-
-                    @if (session('success'))
-                        <div class="p-4 text-green-700 bg-green-100 border border-green-400 rounded-lg">
-                            <div class="flex items-center justify-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>{{ session('success') }}</span>
-                            </div>
                         </div>
                     @endif
 

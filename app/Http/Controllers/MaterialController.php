@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
+use App\Models\Department;
 use App\Models\Material;
 use App\Models\MaterialMovement;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MaterialController extends Controller
 {
+    /**
+     * Display a listing of the materials.
+     */
     public function index(Request $request)
     {
         $search = $request->get('search');
@@ -25,20 +33,23 @@ class MaterialController extends Controller
         return view('materials.index', compact('materials', 'search'));
     }
 
+    /**
+     * Show the movements of a specific material.
+     */
     public function movements($id, Request $request)
     {
         $material = Material::findOrFail($id);
-        $search = $request->get('search');
+        // $search = $request->get('search');
 
         $movements = MaterialMovement::with(['user', 'area'])
             ->where('material_id', $id)
-            ->when($search, function ($query, $search) {
-                return $query->whereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                    ->orWhere('type', 'like', "%{$search}%")
-                    ->orWhere('comment', 'like', "%{$search}%");
-            })
+            // ->when($search, function ($query, $search) {
+            //     return $query->whereHas('user', function ($q) use ($search) {
+            //         $q->where('name', 'like', "%{$search}%");
+            //     })
+            //         ->orWhere('type', 'like', "%{$search}%")
+            //         ->orWhere('comment', 'like', "%{$search}%");
+            // })
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -169,5 +180,73 @@ class MaterialController extends Controller
         }
 
         return view('materials.validate');
+    }
+
+    public function statistics(Request $request)
+    {
+        // Opciones permitidas y valor por defecto
+        $allowedDays = [7, 14, 30, 60];
+        $days = (int) $request->query('days', 14);
+        if (!in_array($days, $allowedDays)) {
+            $days = 14;
+        }
+
+        // Total de materiales
+        $totalMaterials = Material::count();
+
+        // Conteo por status
+        $statusCounts = Material::select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->orderBy('status')
+            ->get()
+            ->pluck('total', 'status')
+            ->toArray();
+
+        // Movimientos por área — solo áreas con > 0 movimientos
+        $movementsByAreaQuery = DB::table('areas')
+            ->leftJoin('material_movements', 'areas.id', '=', 'material_movements.area_id')
+            ->select('areas.id', 'areas.name', DB::raw('COUNT(material_movements.id) as total'))
+            ->groupBy('areas.id', 'areas.name')
+            ->havingRaw('COUNT(material_movements.id) > 0') // <- quita ceros
+            ->orderByDesc('total');
+
+        $movementsByArea = $movementsByAreaQuery
+            ->pluck('total', 'name') // ['Área A' => 12, ...]
+            ->toArray();
+
+        // Materiales creados en los últimos N días
+        $start = Carbon::now()->subDays($days - 1)->startOfDay();
+        $materialsPerDayQuery = Material::where('created_at', '>=', $start)
+            ->select(DB::raw("DATE(created_at) as date"), DB::raw('count(*) as total'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->pluck('total', 'date')
+            ->toArray();
+
+        $labelsDates = [];
+        $materialsPerDay = [];
+        for ($i = 0; $i < $days; $i++) {
+            $d = $start->copy()->addDays($i)->format('Y-m-d');
+            $labelsDates[] = $d;
+            $materialsPerDay[] = isset($materialsPerDayQuery[$d]) ? (int)$materialsPerDayQuery[$d] : 0;
+        }
+
+        // Movimientos recientes
+        $recentMovements = MaterialMovement::with(['material', 'area', 'user'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        return view('materials.statistics', [
+            'totalMaterials' => $totalMaterials,
+            'statusCounts' => $statusCounts,
+            'movementsByArea' => $movementsByArea,
+            'materialsPerDayLabels' => $labelsDates,
+            'materialsPerDayValues' => $materialsPerDay,
+            'recentMovements' => $recentMovements,
+            'days' => $days,
+            'daysOptions' => $allowedDays,
+        ]);
     }
 }

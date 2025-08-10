@@ -1,7 +1,7 @@
 <x-app-layout>
-    <div class="flex items-center justify-center min-h-screen py-12">
-        <div class="w-full max-w-2xl">
-            <div class="overflow-hidden bg-white shadow-xl sm:rounded-lg">
+    <div class="py-12">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-8">
                     <form method="POST" action="{{ route('materials.store') }}" id="scanForm">
                         @csrf
@@ -59,7 +59,6 @@
         </div>
     </div>
 
-    <!-- JavaScript vanilla para autofocus permanente -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const scanInput = document.getElementById('scanInput');

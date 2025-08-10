@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('material_movements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('material_id')->constrained('materials');
-            $table->foreignId('area_id')->constrained('areas');
+            $table->foreignId('area_id')->nullable()->constrained('areas');
             $table->foreignId('user_id')->constrained('users');
-            $table->enum('type', ['entry', 'exit', 'inspection', 'rejection']);
+            $table->enum('type', ['entry', 'exit', 'inspection', 'rejection', 'validated']);
             $table->string('comment')->nullable();
             $table->timestamps();
         });

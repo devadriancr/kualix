@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('materials', function (Blueprint $table) {
             $table->id();
+            $table->string('ulid')->unique();
             $table->string('barcode');
             $table->string('order_number')->nullable();
             $table->string('part_number')->nullable();
             $table->string('sequence')->nullable();
             $table->string('standard_pack')->nullable();
-            $table->enum('status', ['pending', 'good', 'bad'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }

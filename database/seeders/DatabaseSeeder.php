@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            RolePermissionSeeder::class,
             DepartmentSeeder::class,
             AreaSeeder::class,
             // Add other seeders here as needed

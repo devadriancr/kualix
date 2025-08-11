@@ -11,6 +11,9 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+    Route::resource('roles', App\Http\Controllers\RoleController::class);
+    Route::resource('permissions', App\Http\Controllers\PermissionController::class);
+
     Route::get('/dashboard', [App\Http\Controllers\MaterialController::class, 'statistics'])->name('dashboard');
 
     Route::get('materials/scan', [App\Http\Controllers\MaterialController::class, 'scan'])->name('materials.scan');

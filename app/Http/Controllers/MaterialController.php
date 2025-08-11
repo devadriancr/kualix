@@ -53,7 +53,7 @@ class MaterialController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('materials.movements', compact('material', 'movements', 'search'));
+        return view('materials.movements', compact('material', 'movements'));
     }
 
     /**

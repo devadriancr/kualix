@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('part_number')->nullable();
             $table->string('sequence')->nullable();
             $table->string('standard_pack')->nullable();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'validated'])->default('pending');
             $table->timestamps();
         });
     }

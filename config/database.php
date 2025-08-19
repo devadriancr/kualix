@@ -112,6 +112,23 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'infor-live' => [
+            'driver' => 'odbc',
+            'dsn' => "Driver={Client Access ODBC Driver (32-bit)};System=192.168.200.7;",
+            'database' => "LX834F01",
+            'host' => "192.168.200.7",
+            'username' => "LXSECOFR",
+            'password' => "LXSECOFR"
+        ],
+
+        'infor-proto' => [
+            'driver' => 'odbc',
+            'dsn' => "Driver={Client Access ODBC Driver (32-bit)};System=192.168.200.7;",
+            'database' => "LX834FU02",
+            'host' => "192.168.200.7",
+            'username' => "LXSECOFR",
+            'password' => "LXSECOFR"
+        ],
     ],
 
     /*
@@ -147,7 +164,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 

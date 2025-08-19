@@ -5,13 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Department;
+use App\Models\FSO;
 use App\Models\Material;
 use App\Models\MaterialMovement;
 use App\Models\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class MaterialController extends Controller
 {
@@ -84,6 +88,15 @@ class MaterialController extends Controller
 
         $material = Material::where('barcode', $barcode)->first();
 
+        $partNumberCode = FSO::query()
+            ->selectRaw('TRIM(SPROD) AS part_number')
+            ->where('SORD', $orderNumber)
+            ->value('PART_NUMBER');
+
+        if (!$partNumberCode) {
+            return back()->with('error', 'Número de parte no encontrado');
+        }
+
         if (!$material) {
             // Primer escaneo → Registrar material como pendiente
             $material = Material::create([
@@ -92,6 +105,7 @@ class MaterialController extends Controller
                 'sequence'      => $sequence,
                 'standard_pack' => $standardPack,
                 'status'        => 'pending',
+                'part_number'   => $partNumberCode,
             ]);
 
             // Registrar entrada
@@ -109,8 +123,16 @@ class MaterialController extends Controller
             return redirect()->route('materials.inspect', $material->id);
         }
 
-        return back()->with('error', "Este material ya fue procesado con estado: " .
-            ($material->status == 'approved' ? 'Aprobado' : 'Rechazado'));
+        $statusLabels = [
+            'pending'   => 'Pendiente',
+            'approved'  => 'Aprobado',
+            'rejected'  => 'Rechazado',
+            'validated' => 'Validado',
+        ];
+
+        $statusLabel = $statusLabels[$material->status] ?? ucfirst($material->status ?? 'Sin estado');
+
+        return back()->with('error', "Este material ya fue procesado con estado: {$statusLabel}");
     }
 
     /**
@@ -155,19 +177,20 @@ class MaterialController extends Controller
     {
         if ($request->isMethod('post')) {
             $request->validate([
-                'scanInput' => 'required|string|max:20'
+                'scanInput' => 'required|string|max:26' // Cambié a 26 para ULID
             ], [
                 'scanInput.required' => 'El campo de entrada de escaneo es obligatorio.',
                 'scanInput.string'   => 'El campo de entrada de escaneo debe ser una cadena.',
-                'scanInput.max'      => 'El campo de entrada de escaneo no puede tener más de 20 caracteres.',
+                'scanInput.max'      => 'El campo de entrada de escaneo no puede tener más de 26 caracteres.',
             ]);
 
+            // Buscar por ULID en lugar de barcode
             $material = Material::with(['materialMovements' => function ($query) {
                 $query->latest()->with(['user', 'area.department']);
-            }])->where('barcode', $request->scanInput)->first();
+            }])->where('ulid', $request->scanInput)->first();
 
             if (!$material) {
-                return back()->with('error', 'Etiqueta no encontrada');
+                return back()->with('error', 'Material no encontrado');
             }
 
             $lastMovement = $material->materialMovements->first();
@@ -248,5 +271,40 @@ class MaterialController extends Controller
             'days' => $days,
             'daysOptions' => $allowedDays,
         ]);
+    }
+
+    public function print()
+    {
+        $ulid = '01F4WQZ23RVXWTF03QNT0KNK9J'; // Tu ULID
+
+        try {
+            // Aumentar timeout y agregar más debugging
+            $response = Http::timeout(30)
+                ->retry(3, 1000) // 3 reintentos con 1 segundo de espera
+                ->post('http://localhost:8080/print-qr', [
+                    'ulid' => $ulid
+                ]);
+
+            // Log para debugging
+            Log::info('Response status: ' . $response->status());
+            Log::info('Response body: ' . $response->body());
+
+            if ($response->successful()) {
+                $result = $response->json();
+                if ($result['success']) {
+                    return response()->json(['message' => 'Material creado e impreso correctamente']);
+                } else {
+                    return response()->json(['error' => 'Error imprimiendo: ' . $result['message']], 500);
+                }
+            } else {
+                return response()->json(['error' => 'Error HTTP: ' . $response->status() . ' - ' . $response->body()], 500);
+            }
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Connection error: ' . $e->getMessage());
+            return response()->json(['error' => 'No se puede conectar al servicio de impresión. ¿Está ejecutándose?'], 500);
+        } catch (\Exception $e) {
+            Log::error('General error: ' . $e->getMessage());
+            return response()->json(['error' => 'Error general: ' . $e->getMessage()], 500);
+        }
     }
 }

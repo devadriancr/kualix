@@ -1,11 +1,12 @@
 <x-app-layout>
-
     @php
+        // Mapas de texto
         $statusMap = [
-            'pending'  => 'Pendiente',
-            'approved' => 'Aprobado',
-            'rejected' => 'Rechazado',
-            null       => 'Sin estado'
+            'pending'   => 'Pendiente',
+            'approved'  => 'Aprobado',
+            'rejected'  => 'Rechazado',
+            'validated' => 'Validado',
+            null        => 'Sin estado'
         ];
 
         $typeMap = [
@@ -16,7 +17,6 @@
             'validated'  => 'Validado'
         ];
 
-        // Etiquetas y keys de estatus (para asignar colores)
         $statusKeys = array_keys($statusCounts);
         $statusLabelsSpanish = [];
         foreach ($statusKeys as $k) {
@@ -33,12 +33,9 @@
                     <p class="text-sm text-gray-500">Resumen rápido de materiales y movimientos</p>
                 </div>
 
-                <!-- Selector de periodo (más grande y visible) -->
                 <form method="GET" class="flex items-center space-x-3">
                     <label class="text-sm text-gray-600 dark:text-gray-300">Periodo:</label>
-                    <select name="days"
-                            onchange="this.form.submit()"
-                            class="w-44 md:w-56 px-4 py-2 text-sm md:text-base rounded-lg border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select name="days" onchange="this.form.submit()" class="w-44 md:w-56 px-4 py-2 text-sm md:text-base rounded-lg border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         @foreach($daysOptions as $opt)
                             <option value="{{ $opt }}" @if($opt == $days) selected @endif>{{ $opt }} días</option>
                         @endforeach
@@ -49,7 +46,7 @@
                 </form>
             </div>
 
-            <!-- Resumen cards (ahora 3 columnas en lg) -->
+            <!-- Cards resumen -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border">
                     <p class="text-xs text-gray-500">Total de materiales</p>
@@ -88,7 +85,7 @@
             <!-- Gráficas -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border">
-                    <h4 class="text-lg font-medium mb-3 text-gray-800 dark:text-gray-100">Estatus de materiales</h4>
+                    <h4 class="text-lg font-medium mb-3 text-gray-800 dark:text-gray-100">Estados de materiales</h4>
                     <div class="chart-card h-56 md:h-64">
                         <canvas id="statusChart" class="w-full h-full"></canvas>
                     </div>
@@ -116,7 +113,7 @@
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead>
                             <tr class="text-left text-gray-500">
-                                <th class="px-4 py-2">#</th>
+                                <th class="px-4 py-2">No. Parte</th>
                                 <th class="px-4 py-2">Material</th>
                                 <th class="px-4 py-2">Área</th>
                                 <th class="px-4 py-2">Usuario</th>
@@ -127,8 +124,8 @@
                         <tbody class="divide-y divide-gray-100">
                             @foreach($recentMovements as $m)
                                 <tr class="text-gray-700 dark:text-gray-200">
-                                    <td class="px-4 py-2">{{ $m->id }}</td>
-                                    <td class="px-4 py-2">{{ optional($m->material)->order_number ?? optional($m->material)->ulid ?? '—' }}</td>
+                                    <td class="px-4 py-2">{{ optional($m->material)->part_number ?? '—' }}</td>
+                                    <td class="px-4 py-2">{{ optional($m->material)->order_number ?? '—' }}</td>
                                     <td class="px-4 py-2">{{ optional($m->area)->name ?? '—' }}</td>
                                     <td class="px-4 py-2">{{ optional($m->user)->name ?? '—' }}</td>
                                     <td class="px-4 py-2">{{ $typeMap[$m->type] ?? $m->type }}</td>
@@ -150,9 +147,8 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Datos desde el controlador
-        const statusKeys = @json($statusKeys); // ej. ['pending','approved','rejected']
-        const statusLabels = @json($statusLabelsSpanish); // etiquetas en español
+        const statusKeys = @json($statusKeys);
+        const statusLabels = @json($statusLabelsSpanish);
         const statusCounts = @json(array_values($statusCounts));
 
         const materialsPerDayLabels = @json($materialsPerDayLabels);
@@ -161,25 +157,24 @@
         const movementsByAreaLabels = @json(array_keys($movementsByArea));
         const movementsByAreaValues = @json(array_values($movementsByArea));
 
-        // Colores base que pediste para líneas/barras
         const BG_COLOR = 'rgba(75, 192, 192, 0.2)';
         const BORDER_COLOR = 'rgb(75, 192, 192)';
 
-        // Colores por estatus (bg con alpha y borde sólido)
         const STATUS_BG = {
-            'pending': 'rgba(255, 205, 86, 0.6)',   // amarillo
-            'approved': 'rgba(75, 192, 192, 0.6)',  // verde/teal
-            'rejected': 'rgba(255, 99, 132, 0.6)',  // rojo
-            'null': 'rgba(201,203,207,0.6)'         // gris (sin estado)
+            'pending': 'rgba(255, 205, 86, 0.6)',
+            'approved': 'rgba(75, 192, 192, 0.6)',
+            'rejected': 'rgba(255, 99, 132, 0.6)',
+            'validated': 'rgba(60, 179, 113, 0.6)',
+            'null': 'rgba(201,203,207,0.6)'
         };
         const STATUS_BORDER = {
             'pending': 'rgb(255, 205, 86)',
             'approved': 'rgb(75, 192, 192)',
             'rejected': 'rgb(255, 99, 132)',
+            'validated': 'rgb(60, 179, 113)',
             'null': 'rgb(201,203,207)'
         };
 
-        // Construir arrays de color para el donut según los keys (si no encuentra key usa 'null')
         const statusBgArray = statusKeys.map(k => STATUS_BG[k] ?? STATUS_BG['null']);
         const statusBorderArray = statusKeys.map(k => STATUS_BORDER[k] ?? STATUS_BORDER['null']);
 
@@ -193,7 +188,7 @@
             interaction: { mode: 'nearest', axis: 'x', intersect: false }
         };
 
-        // Donut - estatus (colores por estatus)
+        // Donut
         new Chart(document.getElementById('statusChart').getContext('2d'), {
             type: 'doughnut',
             data: {
@@ -208,7 +203,7 @@
             options: Object.assign({}, commonOptions, { cutout: '50%' })
         });
 
-        // Línea - materiales por día (usa EXACTAMENTE los colores que pediste)
+        // Line - materials per day
         new Chart(document.getElementById('materialsPerDayChart').getContext('2d'), {
             type: 'line',
             data: {
@@ -232,7 +227,7 @@
             })
         });
 
-        // Barras - movimientos por área (usa color base)
+        // Bar - movements by area
         new Chart(document.getElementById('movementsByAreaChart').getContext('2d'), {
             type: 'bar',
             data: {

@@ -11,8 +11,9 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::resource('roles', App\Http\Controllers\RoleController::class);
-    Route::resource('permissions', App\Http\Controllers\PermissionController::class);
+    Route::resource('roles', App\Http\Controllers\RoleController::class)->except(['show']);
+    Route::resource('permissions', App\Http\Controllers\PermissionController::class)->except(['show']);
+    Route::resource('users', App\Http\Controllers\UserController::class)->except(['show']);
 
     Route::get('/dashboard', [App\Http\Controllers\MaterialController::class, 'statistics'])->name('dashboard');
 
@@ -25,3 +26,6 @@ Route::middleware([
     Route::get('materials', [App\Http\Controllers\MaterialController::class, 'index'])->name('materials.index');
     Route::get('materials/{id}/movements', [App\Http\Controllers\MaterialController::class, 'movements'])->name('materials.movements');
 });
+
+
+Route::get('print', [App\Http\Controllers\MaterialController::class, 'print'])->name('print');

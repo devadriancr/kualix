@@ -32,7 +32,11 @@ class RoleController extends Controller
             'guard_name' => 'web',
         ]);
 
-        $role->syncPermissions($request->permissions ?? []);
+        $permissionNames = Permission::whereIn('id', $request->permissions ?? [])
+            ->pluck('name')
+            ->toArray();
+
+        $role->syncPermissions($permissionNames);
 
         return redirect()->route('roles.index')->with('success', 'Rol creado correctamente.');
     }
@@ -50,9 +54,13 @@ class RoleController extends Controller
             'permissions' => 'array'
         ]);
 
-        $role->update(['name' => $request->name]);
+        $role->update(['name' => $request->name, 'guard_name' => 'web',]);
 
-        $role->syncPermissions($request->permissions ?? []);
+        $permissionNames = Permission::whereIn('id', $request->permissions ?? [])
+            ->pluck('name')
+            ->toArray();
+
+        $role->syncPermissions($permissionNames);
 
         return redirect()->route('roles.index')->with('success', 'Rol actualizado correctamente.');
     }

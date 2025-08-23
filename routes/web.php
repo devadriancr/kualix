@@ -2,9 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 Route::middleware([
     'auth:sanctum',
@@ -15,6 +12,7 @@ Route::middleware([
     Route::resource('permissions', App\Http\Controllers\PermissionController::class)->except(['show']);
     Route::resource('users', App\Http\Controllers\UserController::class)->except(['show']);
 
+    Route::get('/',  [App\Http\Controllers\MaterialController::class, 'statistics'])->name('dashboard');
     Route::get('/dashboard', [App\Http\Controllers\MaterialController::class, 'statistics'])->name('dashboard');
 
     Route::get('materials/scan', [App\Http\Controllers\MaterialController::class, 'scan'])->name('materials.scan');

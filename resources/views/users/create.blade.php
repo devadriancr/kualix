@@ -34,6 +34,15 @@
                                 @enderror
                             </div>
 
+                            <!-- Nickname -->
+                            <div class="mb-4">
+                                <x-label for="nickname" value="Usuario" />
+                                <x-input id="nickname" name="nickname" type="text" class="block w-full mt-1" value="{{ old('nickname') }}" />
+                                @error('nickname')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <!-- Email -->
                             <div class="mb-4">
                                 <x-label for="email" value="Email" />

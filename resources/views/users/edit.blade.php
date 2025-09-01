@@ -35,6 +35,14 @@
                                 @enderror
                             </div>
 
+                            <div>
+                                <x-label for="nickname" :value="__('Usuario')" />
+                                <x-input id="nickname" class="block mt-1 w-full" type="text" name="nickname" :value="old('nickname', $user->nickname)" required />
+                                @error('nickname')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <!-- Email -->
                             <div>
                                 <x-label for="email" :value="__('Email')" />

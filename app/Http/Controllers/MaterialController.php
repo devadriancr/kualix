@@ -170,7 +170,18 @@ class MaterialController extends Controller
             'comment'   => $validated['comment'],
         ]);
 
-        return redirect()->route('materials.scan')->with('success', 'Resultado de inspección guardado correctamente.');
+
+        return redirect()->route('materials.print-label', $material->id);
+    }
+
+    /**
+     * Mostrar la etiqueta para impresión
+     */
+    public function printLabel($id)
+    {
+        $material = Material::findOrFail($id);
+
+        return view('materials.print-label', compact('material'));
     }
 
     public function validate(Request $request)
@@ -271,40 +282,5 @@ class MaterialController extends Controller
             'days' => $days,
             'daysOptions' => $allowedDays,
         ]);
-    }
-
-    public function print()
-    {
-        $ulid = '01F4WQZ23RVXWTF03QNT0KNK9J'; // Tu ULID
-
-        try {
-            // Aumentar timeout y agregar más debugging
-            $response = Http::timeout(30)
-                ->retry(3, 1000) // 3 reintentos con 1 segundo de espera
-                ->post('http://localhost:8080/print-qr', [
-                    'ulid' => $ulid
-                ]);
-
-            // Log para debugging
-            Log::info('Response status: ' . $response->status());
-            Log::info('Response body: ' . $response->body());
-
-            if ($response->successful()) {
-                $result = $response->json();
-                if ($result['success']) {
-                    return response()->json(['message' => 'Material creado e impreso correctamente']);
-                } else {
-                    return response()->json(['error' => 'Error imprimiendo: ' . $result['message']], 500);
-                }
-            } else {
-                return response()->json(['error' => 'Error HTTP: ' . $response->status() . ' - ' . $response->body()], 500);
-            }
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('Connection error: ' . $e->getMessage());
-            return response()->json(['error' => 'No se puede conectar al servicio de impresión. ¿Está ejecutándose?'], 500);
-        } catch (\Exception $e) {
-            Log::error('General error: ' . $e->getMessage());
-            return response()->json(['error' => 'Error general: ' . $e->getMessage()], 500);
-        }
     }
 }

@@ -35,6 +35,24 @@
                             {{ __('Validar Etiqueta') }}
                         </x-nav-link>
                     @endcan
+
+                    @can('view roles')
+                        <x-nav-link href="{{ route('roles.index') }}" :active="request()->routeIs('roles.index')">
+                            {{ __('Roles') }}
+                        </x-nav-link>
+                    @endcan
+
+                    @can('view permissions')
+                        <x-nav-link href="{{ route('permissions.index') }}" :active="request()->routeIs('permissions.index')">
+                            {{ __('Permisos') }}
+                        </x-nav-link>
+                    @endcan
+
+                    @can('view users')
+                        <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')">
+                            {{ __('Usuarios') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -201,6 +219,27 @@
                 <x-responsive-nav-link href="{{ route('materials.validate') }}"
                                        :active="request()->routeIs('materials.validate')">
                     {{ __('Validar Etiqueta') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view roles')
+                <x-responsive-nav-link href="{{ route('roles.index') }}"
+                                       :active="request()->routeIs('roles.index')">
+                    {{ __('Roles') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view permissions')
+                <x-responsive-nav-link href="{{ route('permissions.index') }}"
+                                       :active="request()->routeIs('permissions.index')">
+                    {{ __('Permisos') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view users')
+                <x-responsive-nav-link href="{{ route('users.index') }}"
+                                       :active="request()->routeIs('users.index')">
+                    {{ __('Usuarios') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

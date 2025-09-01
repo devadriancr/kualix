@@ -24,10 +24,11 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => ['nullable', 'confirmed', Password::min(8)],
-            'area_id' => 'required|exists:areas,id',
-            'roles' => 'nullable|array',
+            'nickname' => 'required|string|max:255|unique:users,nickname,'.$this->user->id,
+            'email' => 'required|string|email|max:255',
+            'password' => 'sometimes|nullable|string|min:8|confirmed',
+            'area_id' => 'nullable|exists:areas,id',
+            'roles' => 'sometimes|array',
             'roles.*' => 'exists:roles,id',
         ];
     }

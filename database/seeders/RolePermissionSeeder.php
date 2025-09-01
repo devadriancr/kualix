@@ -21,8 +21,7 @@ class RolePermissionSeeder extends Seeder
             $role = Role::firstOrCreate(['name' => $roleName]);
         }
 
-        // Crear permisos
-        $modules = ['users', 'areas', 'departments', 'materials', 'movements'];
+        $modules = ['users', 'areas', 'departments', 'materials', 'movements', 'permissions', 'roles'];
         $actions = ['create', 'view', 'edit', 'delete'];
 
         foreach ($modules as $module) {

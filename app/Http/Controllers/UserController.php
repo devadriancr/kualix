@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\Area;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -39,6 +40,7 @@ class UserController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
+            'nickname' => $validated['nickname'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'area_id' => $validated['area_id'],
@@ -66,6 +68,7 @@ class UserController extends Controller
 
         $data = [
             'name' => $validated['name'],
+            'nickname' => $validated['nickname'],
             'email' => $validated['email'],
             'area_id' => $validated['area_id'],
         ];
@@ -95,5 +98,27 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario eliminado correctamente');
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'login' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $credentials = $request->only('login', 'password');
+
+        if (
+            Auth::attempt(['email' => $credentials['login'], 'password' => $credentials['password']]) ||
+            Auth::attempt(['nickname' => $credentials['login'], 'password' => $credentials['password']])
+        ) {
+            $request->session()->regenerate();
+            return redirect()->intended('/dashboard');
+        }
+
+        return back()->withErrors([
+            'user' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
+        ]);
     }
 }

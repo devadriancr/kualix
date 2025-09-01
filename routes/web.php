@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::post('login', [App\Http\Controllers\UserController::class, 'login']);
 
 Route::middleware([
     'auth:sanctum',
@@ -26,4 +27,4 @@ Route::middleware([
 });
 
 
-Route::get('print', [App\Http\Controllers\MaterialController::class, 'print'])->name('print');
+Route::get('/materials/{id}/print-label', [App\Http\Controllers\MaterialController::class, 'printLabel'])->name('materials.print-label');

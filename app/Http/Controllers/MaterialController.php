@@ -248,11 +248,11 @@ class MaterialController extends Controller
             ->pluck('total', 'name') // ['Área A' => 12, ...]
             ->toArray();
 
-        // Materiales creados en los últimos N días
         $start = Carbon::now()->subDays($days - 1)->startOfDay();
+
         $materialsPerDayQuery = Material::where('created_at', '>=', $start)
-            ->select(DB::raw("DATE(created_at) as date"), DB::raw('count(*) as total'))
-            ->groupBy('date')
+            ->select(DB::raw("CAST(created_at AS DATE) as date"), DB::raw('count(*) as total'))
+            ->groupBy(DB::raw("CAST(created_at AS DATE)"))
             ->orderBy('date')
             ->get()
             ->pluck('total', 'date')

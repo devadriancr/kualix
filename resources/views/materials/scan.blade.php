@@ -18,7 +18,7 @@
 
                             <!-- Botón al lado del input -->
                             <div class="mb-1">
-                                <x-button type="submit" class="h-[42px]">
+                                <x-button type="submit" id="submitButton" class="h-[42px]">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -63,29 +63,75 @@
         document.addEventListener('DOMContentLoaded', function() {
             const scanInput = document.getElementById('scanInput');
             const scanForm = document.getElementById('scanForm');
+            const submitButton = document.getElementById('submitButton');
+            let isSubmitting = false;
 
             // Función para enfocar el input
             function focusInput() {
-                scanInput.focus();
+                // Solo enfocar si no estamos en proceso de envío
+                if (!isSubmitting) {
+                    scanInput.focus();
+                }
             }
 
             // Enfocar al cargar la página
             focusInput();
 
-            // Enfocar después de enviar el formulario
-            scanForm.addEventListener('submit', function() {
-                setTimeout(focusInput, 100);
-            });
+            // Prevenir envíos múltiples
+            scanForm.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return;
+                }
 
-            // Enfocar al hacer clic en cualquier parte del documento
-            document.addEventListener('click', focusInput);
+                isSubmitting = true;
+
+                // Deshabilitar el botón y cambiar texto
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    {{ __('Procesando...') }}
+                `;
+
+                // Re-enfocar después de que se complete el envío
+                // Usamos un timeout más largo para asegurar que el envío termine
+                setTimeout(function() {
+                    isSubmitting = false;
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {{ __('Guardar') }}
+                    `;
+                    focusInput();
+                    scanInput.value = ''; // Limpiar el input
+                }, 2000); // 2 segundos deberían ser suficientes
+            });
 
             // Enfocar cuando se presiona cualquier tecla (excepto dentro del input)
             document.addEventListener('keydown', function(e) {
-                if (document.activeElement !== scanInput) {
+                // No enfocar si es Tab, Shift, Ctrl, Alt, etc.
+                if (e.key.length === 1 && document.activeElement !== scanInput &&
+                    !isSubmitting && !e.ctrlKey && !e.altKey && !e.metaKey) {
                     focusInput();
                 }
             });
+
+            // Enfocar al hacer clic en cualquier parte del documento (excepto en botones y enlaces)
+            document.addEventListener('click', function(e) {
+                if (!isSubmitting &&
+                    !e.target.closest('button') &&
+                    !e.target.closest('a') &&
+                    e.target !== scanInput) {
+                    focusInput();
+                }
+            });
+
+            // También enfocar cuando la ventana gana foco
+            window.addEventListener('focus', focusInput);
         });
     </script>
 </x-app-layout>

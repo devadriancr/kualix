@@ -185,7 +185,7 @@
             // Generar QR inmediatamente
             generateQR();
 
-            // Respaldo: si no se imprime en 15 segundos, regresar automáticamente
+            // Respaldo: si no se imprime en 5 segundos, regresar automáticamente
             setTimeout(() => {
                 window.location.href = "{{ route('materials.scan') }}";
             }, 5000);
